@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+    # Serviciul PHP + Composer
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: TestareaSoft
+        restart: unless-stopped
+        working_dir: /var/www/html
+        volumes:
+            - ./:/var/www/html
+        entrypoint: >
+            sh -c "chown -R www-data:www-data storage bootstrap/cache &&
+                   php-fpm"
+        networks:
+            - laravel
+
+    # Serviciul Nginx
+    webserver:
+        image: nginx:alpine
+        container_name: nginx_webserver
+        restart: unless-stopped
+        ports:
+            - "8000:80"
+        volumes:
+            - ./:/var/www/html
+            - ./nginx/conf.d:/etc/nginx/conf.d
+        depends_on:
+            - app
+        networks:
+            - laravel
+
+    # Serviciul MySQL
+    db:
+        image: mysql:8.0
+        container_name: mysql_db
+        restart: unless-stopped
+        ports:
+            - "3308:3306"
+        environment:
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_DATABASE: testarea_soft
+            MYSQL_USER: user
+            MYSQL_PASSWORD: secret
+        volumes:
+            - dbdata:/var/lib/mysql
+        networks:
+            - laravel
+
+    # Serviciul phpMyAdmin
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin:latest
+        container_name: phpmyadmin
+        restart: unless-stopped
+        ports:
+            - "8080:80"
+        environment:
+            PMA_HOST: db
+            PMA_PORT: 3306
+            MYSQL_ROOT_PASSWORD: root
+        depends_on:
+            - db
+        networks:
+            - laravel
+
+volumes:
+    dbdata:
+
+networks:
+    laravel:
+        driver: bridge
