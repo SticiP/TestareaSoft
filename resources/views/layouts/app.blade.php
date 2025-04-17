@@ -1,47 +1,31 @@
 <!doctype html>
 <html lang="{{ session('locale') }}">
-
 <x-layout.head />
+<body>
+<div class="main-wrapper">
+    <x-layout.right_bar />
+{{--    <x-layout.vertical_menu />--}}
 
-<body data-sidebar="dark">
+    <div class="page-wrapper">
 
-<!-- Begin page -->
-<div id="layout-wrapper">
+        <x-layout.header />
 
-    <!-- ========== Header Start ========== -->
-    <x-layout.header />
-    <!-- Header End -->
+        @yield('content')
 
+        <x-layout.footer />
+    </div>
 
-    <!-- ========== Left Sidebar Start ========== -->
-    <x-layout.vertical_menu />
-    <!-- Left Sidebar End -->
+    <!-- core:js -->
+    <script src="/vendors/core/core.js"></script>
+    <!-- endinject -->
 
+    <!-- Plugin js for this page -->
+    <script src="/vendors/flatpickr/flatpickr.min.js"></script>
+    <script src="/vendors/apexcharts/apexcharts.min.js"></script>
+    <!-- End plugin js for this page -->
 
-    <!-- ============================================================== -->
-    <!-- Start right Content here -->
-    <!-- ============================================================== -->
-    @yield('content')
-    <!-- end main content-->
-
+    <!-- inject:js -->
+    <script src="/vendors/feather-icons/feather.min.js"></script>
 </div>
-<!-- END layout-wrapper -->
-
-<!-- Right Sidebar -->
-<x-layout.right_bar />
-<!-- /Right-bar -->
-
-<!-- Right bar overlay-->
-<div class="rightbar-overlay"></div>
-
-<!-- JAVASCRIPT -->
-<script src="libs/jquery/jquery.min.js"></script>
-<script src="libs/bootstrap/js/bootstrap.bundle.min.js"></script>
-<script src="libs/metismenu/metisMenu.min.js"></script>
-<script src="libs/simplebar/simplebar.min.js"></script>
-<script src="libs/node-waves/waves.min.js"></script>
-
-<!-- apexcharts -->
-<script src="libs/apexcharts/apexcharts.min.js"></script>
 </body>
 </html>
