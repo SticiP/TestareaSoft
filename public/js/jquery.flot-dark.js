@@ -24,7 +24,7 @@ $(function() {
 
 
 
-  //Line Chart 
+  //Line Chart
   $.plot($('#flotLine'), [
     {
       label: 'Visits',

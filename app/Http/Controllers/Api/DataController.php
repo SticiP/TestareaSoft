@@ -5,11 +5,12 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreSensorDataRequest;
 use App\Models\Device;
 use App\Models\InputSensor;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class DataController extends Controller
 {
-    public function store(StoreSensorDataRequest $request)
+    public function store_old(StoreSensorDataRequest $request)
     {
         $device = Device::where('mac_address', $request->mac_address)->firstOrFail();
         $deviceId = $device->id;
@@ -78,6 +79,46 @@ class DataController extends Controller
             'message' => 'Data received successfully',
             'device' => $device->device_name,
             'sensors_processed' => count($dataRows),
+        ], 201);
+    }
+
+    public function store(Request $request)
+    {
+        $data = $request->query();
+
+        if (empty($data)) {
+            return response()->json(['message' => 'No data provided'], 400);
+        }
+
+        $sensorNames = array_keys($data);
+
+        $sensors = InputSensor::whereIn('sensor_name', $sensorNames)
+            ->get()
+            ->keyBy('sensor_name');
+
+        $now = now();
+        $rows = [];
+
+        foreach ($data as $name => $value) {
+            if (! $sensors->has($name)) {
+                continue;
+            }
+            $rows[] = [
+                'input_sensor_id' => $sensors[$name]->id,
+                'value'           => (float) $value,
+                'created_at'      => $now,
+                'updated_at'      => $now,
+            ];
+        }
+
+        // 3) Bulk insert
+        if (! empty($rows)) {
+            \DB::table('input_sensor_data')->insert($rows);
+        }
+
+        return response()->json([
+            'message'          => 'Data processed successfully',
+            'inserted_records' => count($rows),
         ], 201);
     }
 }

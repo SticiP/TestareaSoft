@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('output_sensors', function (Blueprint $table) {
             $table->id('id');
             $table->foreignId('device_id')->constrained('devices')->onDelete('cascade');
-            $table->string('sensor_type'); // ex: 'relay'
+            $table->foreignId('sensor_type_id')->constrained('sensor_types')->onDelete('restrict');
             $table->string('sensor_name');
             $table->integer('pin_number')->nullable();
             $table->json('parameters')->nullable(); // ex: {"default_state": 0}

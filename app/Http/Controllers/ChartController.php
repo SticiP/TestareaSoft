@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Chart;
 use App\Models\Device;
 use App\Models\InputSensor;
+use App\Models\InputSensorData;
 use App\Models\SensorType;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ChartController extends Controller
 {
@@ -68,7 +70,6 @@ class ChartController extends Controller
      */
     private function getSensorMeasurements($sensorId, $sensorTypeId, $dateFrom, $dateTo, $labels)
     {
-
         $sensor = InputSensor::where('id', $sensorId)
             ->with([
                 'data' => function($query) use ($dateFrom, $dateTo) {
@@ -104,6 +105,7 @@ class ChartController extends Controller
 
         $result = [];
 
+        $currentLabel = Carbon::parse($labels[15]);
         foreach ($labels as $label) {
             $currentLabel = Carbon::parse($label);
 
@@ -122,12 +124,13 @@ class ChartController extends Controller
             $closest = 0;
             $minDiff = PHP_INT_MAX;
 
-            foreach ($valuesArray as $data) {
+            foreach ($valuesArray as $data)
+            {
                 $diff = abs($data['created_at']->diffInSeconds($currentLabel));
 
                 if ($diff < $minDiff) {
                     $minDiff = $diff;
-                    $closest += $data['value'];
+                    $closest = $data['value'];
                 }
 
                 // Optimizare: Oprește căutarea dacă am depășit data label-ului
@@ -244,5 +247,32 @@ class ChartController extends Controller
         } else {
             return redirect()->back()->with('error', 'Graficul nu a fost găsit sau nu aveți permisiunea de a-l șterge.');
         }
+    }
+
+    /**
+     * Returnează ultimele N puncte pentru sensorul dat.
+     */
+    public function realtimeData(Request $request)
+    {
+        $sensorId = $request->query('sensor_id');
+        $limit    = $request->query('limit', 50);
+
+        // Exemplu: tabel `measurements` cu coloane `sensor_id`, `value`, `created_at`
+        $rows = InputSensorData::where('input_sensor_id', $sensorId)
+            ->orderBy('created_at', 'desc')
+            ->limit($limit)
+            ->get(['created_at', 'value']);
+
+        // Flot aşteaptă un array de [ [timestamp_ms, value], ... ], ordonat ascendent
+        $data = $rows
+            ->map(function($r){
+                // convertim Carbon->milisecunde
+                $ts = strtotime($r->created_at) * 1000;
+                return [ $ts, (float) $r->value ];
+            })
+            ->reverse()  // ca să fie ordonate cronologic
+            ->values();
+
+        return response()->json($data);
     }
 }

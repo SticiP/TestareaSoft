@@ -26,11 +26,9 @@ class InputSensorsController extends Controller
             ->pluck('sensor_type_id')
             ->toArray();
 
-        // Luăm numele tipurilor de senzori din tabela sensor_types
+        // Returnăm array de obiecte cu id și name
         $sensorTypes = SensorType::whereIn('id', $sensorTypeIds)
-            ->pluck('name')
-            ->filter()
-            ->values();
+            ->get(['id', 'name']);
 
         return response()->json($sensorTypes);
     }
@@ -52,8 +50,6 @@ class InputSensorsController extends Controller
         }
 
         $sensors = $query->get(['id', 'sensor_name']);
-
-
         return response()->json($sensors);
     }
 
@@ -129,5 +125,32 @@ class InputSensorsController extends Controller
         // TODO: opțiuni pentru ApexCharts și Flot dacă e nevoie
 
         return response()->json($response);
+    }
+
+    public function sensor_type_add()
+    {
+        return view('add_sensor_type');
+    }
+
+    public function sensor_type_store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:sensor_types,name',
+        ]);
+
+        $sensorType = SensorType::create([
+            'name' => $validated['name'],
+        ]);
+
+        return redirect()->route('home');
+    }
+
+    public function sensor_page($id)
+    {
+        $sensor = InputSensor::with('sensorType')->find($id);
+
+//        dd($sensor);
+
+        return view('sensor_page', compact('sensor'));
     }
 }

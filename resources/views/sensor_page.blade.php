@@ -3,50 +3,6 @@
 @push('head')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="/vendors/select2/select2.min.css">
-    <style>
-        .select2-dropdown {
-            z-index: 9999 !important;
-        }
-
-        .chart-box {
-            flex: 1 1 calc(50% - 1rem);
-            max-width: calc(50% - 1rem);
-            min-width: 400px;
-            /*height: 500px;*/
-        }
-
-        .card {
-            height: 100%;
-            width: 100%; /* Adaugă asta pentru siguranță */
-            display: flex;
-            flex-direction: column; /* Foarte important! */
-        }
-
-        .card-body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100%;
-        }
-
-        /*canvas {*/
-        /*    width: 100% !important;  !* Umple întreaga lățime a cardului *!*/
-        /*    height: 100% !important; !* Umple întreaga înălțime a cardului *!*/
-        /*    object-fit: fill; !* Umple tot spațiul, fără a păstra proporția 1:1 *!*/
-        /*}*/
-
-        .card-header {
-            width: 100%; /* Asigură că header-ul ocupă toată lățimea */
-            padding: 0.5rem 1rem;
-            background-color: #343a40; /* Poți ajusta pentru temă dark/light */
-            color: white;
-            border-bottom: 1px solid #444;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-    </style>
 @endpush
 
 @section('content')
@@ -54,7 +10,7 @@
 
         <div class="d-flex justify-content-between align-items-center flex-wrap grid-margin">
             <div>
-                <h4 class="mb-3 mb-md-0">Welcome to Dashboard</h4>
+                <h4 class="mb-3 mb-md-0">Sensor : {{ $sensor->sensor_name }}</h4>
             </div>
             <div class="d-flex align-items-center flex-wrap text-nowrap">
                 <div class="input-group flatpickr wd-200 me-2 mb-2 mb-md-0" id="dashboardDate">
@@ -66,12 +22,26 @@
             </div>
         </div>
 
-        <div
-            class="flot-chart"
-            id="flotRealTime"
-            data-sensor-id="9408"
-            style="width:800px; height:400px;">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h6>Sensor Type : {{ ucfirst($sensor->sensorType->name) }}</h6>
+                    </div>
+                    <div class="card-body">
+                        <div
+                            class="flot-chart"
+                            id="flotRealTime"
+                            data-sensor-id="{{ $sensor->id }}"
+                            style="width:auto; height:400px;">
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
+
+
+
 
     </div>
 @endsection
@@ -109,12 +79,14 @@
 
             var fontFamily = "'Roboto', Helvetica, sans-serif";
 
+            $.ajaxSetup({ cache: false });
+
             // Real-Time Chart
             if ($("#flotRealTime").length) {
                 // ID-ul senzorului pentru care afișăm date;
                 // poți lua dintr-un atribut data-sensor-id sau din Blade:
                 var sensorId       = $("#flotRealTime").data("sensor-id") || 1;
-                var limitPoints    = 20;
+                var limitPoints    = 30;
                 var updateInterval = 1000;
 
                 // Opțiuni Flot
@@ -134,7 +106,7 @@
                     },
                     yaxis: {
                         min: 0,
-                        max: 150
+                        max: 20
                     },
                     grid: {
                         color: colors.primary,
@@ -150,13 +122,22 @@
                 var plot = $.plot("#flotRealTime", [ [] ], options);
 
                 function fetchAndRender() {
+                    console.log('test1');
                     $.getJSON("/api/realtime/data", {
                         sensor_id: sensorId,
                         limit: limitPoints
                     })
                         .done(function(data) {
-                            console.log(data);
-                            // data e un array de [timestamp_ms, value], ordonat ascendent
+                            // 1) Calculează noul max, cu un +20%
+                            const values = data.map(item => item[1]);
+                            const maxData = Math.max(...values);
+                            const newMax = maxData + maxData * 0.2;
+
+                            // 2) Actualizează direct axa Y
+                            var axes = plot.getAxes();
+                            axes.yaxis.options.max = newMax;
+
+                            // 3) Setează datele și redă graficul
                             plot.setData([ data ]);
                             plot.setupGrid();
                             plot.draw();

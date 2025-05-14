@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('input_sensors', function (Blueprint $table) {
             $table->id(); // Asta generează coloana "id" cu auto increment
             $table->foreignId('device_id')->constrained('devices')->onDelete('cascade');
-            $table->string('sensor_type'); // ex: 'temperature'
+            $table->foreignId('sensor_type_id')->constrained('sensor_types')->onDelete('restrict');
             $table->string('sensor_name');
             $table->integer('pin_number')->nullable();
             $table->json('parameters')->nullable();

@@ -49,43 +49,16 @@
                         Add Chart
                     </button>
                     <ul class="dropdown-menu">
-                        {{--                        <li class="dropdown-header">ApexCharts</li>--}}
-                        {{--                        <li><a class="dropdown-item add-chart" href="#" data-lib="apex" data-type="line">Line</a></li>--}}
-                        {{--                        <li><a class="dropdown-item add-chart" href="#" data-lib="apex" data-type="bar">Bar</a></li>--}}
-                        {{--                        <li><a class="dropdown-item add-chart" href="#" data-lib="apex" data-type="area">Area</a></li>--}}
-                        {{--                        <li><a class="dropdown-item add-chart" href="#" data-lib="apex" data-type="mixed">Mixed</a></li>--}}
-                        {{--                        <li><a class="dropdown-item add-chart" href="#" data-lib="apex" data-type="scatter">Scatter</a>--}}
-                        {{--                        </li>--}}
-                        {{--                        <li>--}}
-                        {{--                            <hr class="dropdown-divider">--}}
-                        {{--                        </li>--}}
                         <li class="dropdown-header">Chart.js</li>
                         <li><a class="dropdown-item add-chart" href="#" data-lib="chartjs" data-type="line">Line</a>
                         </li>
-                        {{--                        <li><a class="dropdown-item add-chart" href="#" data-lib="chartjs" data-type="bar-grouped">Grouped--}}
-                        {{--                                Bar</a></li>--}}
-                        {{--                        <li><a class="dropdown-item add-chart" href="#" data-lib="chartjs" data-type="bubble">Bubble</a>--}}
-                        {{--                        </li>--}}
-                        {{--                        <li><a class="dropdown-item add-chart" href="#" data-lib="chartjs" data-type="area">Area</a>--}}
-                        {{--                        </li>--}}
-                        {{--                        <li>--}}
-                        {{--                            <hr class="dropdown-divider">--}}
-                        {{--                        </li>--}}
-                        {{--                        <li class="dropdown-header">Flot</li>--}}
-                        {{--                        <li><a class="dropdown-item add-chart" href="#" data-lib="flot" data-type="line">Line</a></li>--}}
-                        {{--                        <li><a class="dropdown-item add-chart" href="#" data-lib="flot" data-type="bar">Bar</a></li>--}}
-                        {{--                        <li><a class="dropdown-item add-chart" href="#" data-lib="flot" data-type="pie">Pie</a></li>--}}
-                        {{--                        <li><a class="dropdown-item add-chart" href="#" data-lib="flot"--}}
-                        {{--                               data-type="real-time">Real-Time</a></li>--}}
                     </ul>
                 </div>
             </div>
         </div>
-
-        <div class="d-flex gap-2 flex-wrap" id="grid-example">
-
+        <div id="grid-example" class="d-flex flex-wrap gap-4">
+            {{-- Aici vor fi injectate card-urile cu grafice --}}
         </div>
-
     </div>
 
     <div class="modal fade" id="chartConfigModal" tabindex="-1">
@@ -168,10 +141,6 @@
     <script src="/vendors/sortablejs/Sortable.min.js"></script>
     <script src="/vendors/apexcharts/apexcharts.min.js"></script>
     <script src="/vendors/chartjs/Chart.min.js"></script>
-    <script src="/vendors/jquery.flot/jquery.flot.js"></script>
-    <script src="/vendors/jquery.flot/jquery.flot.resize.js"></script>
-    <script src="/vendors/jquery.flot/jquery.flot.pie.js"></script>
-    <script src="/vendors/jquery.flot/jquery.flot.categories.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
@@ -234,6 +203,13 @@
 
             // load devices on modal open
             $('#chartConfigModal').on('show.bs.modal', () => {
+                const chartType = $('#chart-type').val();
+
+                if (chartType === 'realtime') {
+                    $('#date-from-container, #date-to-container').closest('.mb-3').hide();
+                } else {
+                    $('#date-from-container, #date-to-container').closest('.mb-3').show();
+                }
                 $.getJSON('/device/get', data => {
                     let opts = data.map(d => `<option value="${d.id}">${d.device_name}</option>`).join('');
                     $('#devices').html(opts);
@@ -248,12 +224,14 @@
                 $('#sensors_type').html('');
                 $.ajax({
                     url: 'sensors/type', type: 'GET', data: {device_ids: devs}, success: sensorTypes => {
+                        console.log("sensorTypes : ");
                         console.log(sensorTypes);
 
-                        let opts = sensorTypes.map((type, index) =>
-                            `<option value="${index}">${type}</option>`
+                        let opts = sensorTypes.map(st =>
+                            `<option value="${st.id}">${st.name}</option>`
                         ).join('');
                         $('#sensors_type').html(opts);
+                        $('#sensors_type').trigger('change');
                     }
                 });
             });
@@ -261,8 +239,9 @@
             $('#sensors_type').on('change', function () {
                 let devs = $('#devices').val();
                 let type_id = $(this).val();
+                console.log("devs " + devs);
+                console.log("type_id " + type_id);
                 $('#sensors').html('');
-                console.log(type_id);
                 if (!devs || !devs.length) return;
                 $.ajax({
                     url: '/sensors/get',
@@ -272,6 +251,7 @@
                         type_id: type_id
                     },
                     success: sensors => {
+                        console.log("sensors : ");
                         console.log(sensors);
                         let opts = sensors.map(s => `
                             <option value="${s.id}">${s.sensor_name}</option>
@@ -321,6 +301,15 @@
                 e.preventDefault();
                 $('#chart-lib').val($(this).data('lib'));
                 $('#chart-type').val($(this).data('type'));
+
+                // Forțează actualizarea vizibilității câmpurilor
+                const chartType = $('#chart-type').val();
+                if (chartType === 'realtime') {
+                    $('#date-from-container, #date-to-container').closest('.mb-3').hide();
+                } else {
+                    $('#date-from-container, #date-to-container').closest('.mb-3').show();
+                }
+
                 new bootstrap.Modal($('#chartConfigModal')).show();
             });
 

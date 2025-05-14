@@ -10,7 +10,14 @@ class OutputSensor extends Model
     use HasFactory;
 
     protected $table = 'output_sensors';
-    protected $fillable = ['device_id', 'sensor_type', 'sensor_name', 'pin_number', 'parameters'];
+
+    protected $fillable = [
+        'device_id',
+        'sensor_type_id', // înlocuit 'sensor_type'
+        'sensor_name',
+        'pin_number',
+        'parameters',
+    ];
 
     // Relații
     public function device()
@@ -21,5 +28,10 @@ class OutputSensor extends Model
     public function commands()
     {
         return $this->hasMany(OutputCommand::class);
+    }
+
+    public function sensorType()
+    {
+        return $this->belongsTo(SensorType::class);
     }
 }
