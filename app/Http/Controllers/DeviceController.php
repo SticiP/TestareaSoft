@@ -136,7 +136,16 @@ class DeviceController extends Controller
             ->with(['inputSensors', 'outputSensors'])
             ->findOrFail($id);
 
-        return view('device_page', compact('device'));
+        $sensorName = 'd2';
+
+        $outputCommand = OutputCommand::whereHas('outputSensor', function ($query) use ($sensorName, $device) {
+            $query->where('sensor_name', $sensorName)
+                ->where('device_id', $device->id);
+        })->latest()->first();
+
+        $output = (int) $outputCommand->command_value;
+
+        return view('device_page', compact('device', 'output'));
     }
 
     public function changeStatus(Request $request, $deviceName)
