@@ -46,7 +46,12 @@
                                         <tr>
                                             <th>{{ $index + 1 }}</th>
                                             <td>{{ $sensor->sensor_name }}</td>
-                                            <td>{{ $sensor->sensor_type_id }}</td>
+                                            <td>
+                                                @if($sensor->sensor_name == "a1") Temperatura @endif
+                                                @if($sensor->sensor_name == "a2") Fotorezistor @endif
+                                                @if($sensor->sensor_name == "d1") Button @endif
+                                                @if($sensor->sensor_name == "d2") Led @endif
+                                            </td>
                                             <td class="text-center">
                                                 <a href="{{ route('sensor.page', $sensor->id) }}" class="btn btn-info btn-sm">
                                                     Realtime View
@@ -87,7 +92,9 @@
                                 <tr>
                                     <th>{{ $index + 1 }}</th>
                                     <td>{{ $sensor->sensor_name }}</td>
-                                    <td>{{ $sensor->sensor_type_id }}</td>
+                                    <td>
+                                        @if($sensor->sensor_name == "d2") Led @endif
+                                    </td>
                                     <td class="text-center">
                                         <button
                                             type="button"
