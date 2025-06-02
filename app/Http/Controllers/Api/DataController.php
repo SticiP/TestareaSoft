@@ -5,6 +5,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreSensorDataRequest;
 use App\Models\Device;
 use App\Models\InputSensor;
+use App\Models\OutputCommand;
+use App\Models\OutputSensor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -90,6 +92,18 @@ class DataController extends Controller
             return response()->json(['message' => 'No data provided'], 400);
         }
 
+        $mac = $data['a0'];
+        unset($data['a0']);
+
+        $device = Device::where('mac_address', $mac)->first();
+
+        if(!$device)
+        {
+            return response()->json([
+                'message' => 'No Device Found',
+            ], 202);
+        }
+
         $sensorNames = array_keys($data);
 
         $sensors = InputSensor::whereIn('sensor_name', $sensorNames)
@@ -113,12 +127,26 @@ class DataController extends Controller
 
         // 3) Bulk insert
         if (! empty($rows)) {
-            \DB::table('input_sensor_data')->insert($rows);
+            DB::table('input_sensor_data')->insert($rows);
+        }
+
+        $sensorName = 'd2';
+
+        if ($device) {
+            $outputCommand = OutputCommand::whereHas('outputSensor', function ($query) use ($sensorName, $device) {
+                $query->where('sensor_name', $sensorName)
+                    ->where('device_id', $device->id);
+            })->latest()->first();
+
+            if ($outputCommand) {
+                $output = $outputCommand->command_value;
+            } else {
+                $output = 0;
+            }
         }
 
         return response()->json([
-            'message'          => 'Data processed successfully',
-            'inserted_records' => count($rows),
+            'd2' => $output
         ], 201);
     }
 }

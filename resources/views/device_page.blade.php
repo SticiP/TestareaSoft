@@ -89,8 +89,12 @@
                                     <td>{{ $sensor->sensor_name }}</td>
                                     <td>{{ $sensor->sensor_type_id }}</td>
                                     <td class="text-center">
-                                        <button type="submit" class="btn btn-warning btn-sm">
-                                            Send
+                                        <button
+                                            type="button"
+                                            id="toggleButton"
+                                            class="btn btn-sm"
+                                        >
+                                            Loading...
                                         </button>
                                     </td>
                                 </tr>
@@ -112,4 +116,53 @@
 
 @push('js')
     <script src="/vendors/sortablejs/Sortable.min.js"></script>
+    <script>
+        var output = {{ $output ?? 0 }}; // 0 sau 1
+        const deviceName = "{{ $device->device_name ?? '' }}"; // Numele dispozitivului
+
+        // Funcție pentru actualizarea butonului
+        function updateButtonState(currentStatus) {
+            const button = document.getElementById('toggleButton');
+            button.textContent = currentStatus === 1 ? 'Deactivate' : 'Activate';
+            button.className = currentStatus === 1
+                ? 'btn btn-danger btn-sm'
+                : 'btn btn-warning btn-sm';
+        }
+
+        // Inițializare buton la încărcare
+        updateButtonState(output);
+
+        // Ascultător de eveniment pentru click pe buton
+        document.getElementById('toggleButton').addEventListener('click', function () {
+            const newStatus = output === 1 ? 0 : 1; // Inversăm starea
+
+            // Trimitem un GET către ruta `/change/status/{$deviceName}`
+            fetch(`/change/status/${deviceName}?status=${newStatus}&command_value=${newStatus}`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest' // Pentru a recunoaște cererea AJAX
+                }
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error('Eroare la răspunsul serverului');
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        if(output === 1)
+                            output = 0;
+                        else
+                            output = 1;
+                        // Actualizăm starea locală și butonul
+                        updateButtonState(output);
+                    } else {
+                        alert('Eroare la actualizare!');
+                    }
+                })
+                .catch(error => {
+                    console.error('Eroare:', error);
+                    alert('A apărut o eroare!');
+                });
+        });
+    </script>
 @endpush

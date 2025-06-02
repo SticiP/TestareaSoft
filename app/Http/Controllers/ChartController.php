@@ -37,7 +37,7 @@ class ChartController extends Controller
         return $labels;
     }
 
-    private function generateDatasets($sensors, $sensorType, $dateFrom, $dateTo, $type, $labels)
+    private function generateDatasets($sensors, $dateFrom, $dateTo, $type, $labels)
     {
         $colors = [
             '#6571ff', // primary
@@ -51,7 +51,7 @@ class ChartController extends Controller
         foreach ($sensors as $index => $sensorId) {
             // Presupunem că ai o metodă de a prelua datele măsurate pentru senzor
             $sensor = InputSensor::find($sensorId);
-            $measurements = $this->getSensorMeasurements($sensorId, $sensorType, $dateFrom, $dateTo, $labels);
+            $measurements = $this->getSensorMeasurements($sensorId, $dateFrom, $dateTo, $labels);
             $datasets[] = [
                 'label' => $sensor->sensor_name ?? 'Sensor ' . ($index + 1),
                 'backgroundColor' => $colors[$index % count($colors)],
@@ -68,7 +68,7 @@ class ChartController extends Controller
     /**
      * @throws \DateMalformedStringException
      */
-    private function getSensorMeasurements($sensorId, $sensorTypeId, $dateFrom, $dateTo, $labels)
+    private function getSensorMeasurements($sensorId, $dateFrom, $dateTo, $labels)
     {
         $sensor = InputSensor::where('id', $sensorId)
             ->with([
@@ -78,10 +78,6 @@ class ChartController extends Controller
                 'sensorType'
             ])
             ->firstOrFail();
-
-        if ($sensor->sensor_type_id !== (int) $sensorTypeId) {
-            throw new \Exception("Tipul senzorului nu corespunde.");
-        }
 
         $allData = $sensor->data()
             ->whereBetween('created_at', [$dateFrom, $dateTo])
@@ -152,9 +148,9 @@ class ChartController extends Controller
             'type' => 'required|string',
             'devices' => 'required|array',
             'devices.*' => 'exists:devices,id',
-            'sensor_type' => 'exists:sensor_types,id',
+//            'sensor_type' => 'exists:sensor_types,id',
             'sensors' => 'required|array',
-            'sensors.*' => 'exists:input_sensors,id',
+//            'sensors.*' => 'exists:input_sensors,id',
             'date_from' => 'required|date_format:Y-m-d H:i', // Specificăm formatul
             'date_to' => [
                 'required_unless:current_time,on', // Nu este necesar dacă current_time este activat
@@ -169,8 +165,9 @@ class ChartController extends Controller
         }
 
         $devices_id = $validated['devices'];
-        $sensors = $validated['sensors'];
-        $sensorTypeId = $validated['sensor_type'];
+        $sensor = $validated['sensors'][0];
+//        $sensors = $validated['sensors'];
+//        $sensorTypeId = $validated['sensor_type'];
         $dateFrom = $validated['date_from'];
         $dateTo = $validated['date_to'];
         $type = $validated['type'];
@@ -180,7 +177,15 @@ class ChartController extends Controller
         $title = $devices->pluck('device_name')->implode(' / ');
 
         $labels = $this->generateLabels($dateFrom, $dateTo);
-        $datasets = $this->generateDatasets($sensors, $sensorTypeId, $dateFrom, $dateTo, $type, $labels);
+
+        $sensors = InputSensor::whereHas('device', function ($query) use ($devices) {
+            $query->whereIn('id', $devices->pluck('id'));
+        })
+            ->where('sensor_name', $sensor)
+            ->pluck('id')
+            ->toArray();
+
+        $datasets = $this->generateDatasets($sensors, $dateFrom, $dateTo, $type, $labels);
 
         // Construim configurația Chart.js
         $chartData = [
@@ -221,15 +226,13 @@ class ChartController extends Controller
             ]
         ];
 
-        $sensorType = SensorType::find($sensorTypeId);
-
         // Salvăm configurația în baza de date
         Chart::create([
             'user_id' => auth()->id(),
             'lib' => $lib,
             'type' => $type,
             'data' => json_encode($chartData),
-            'title' => $title . " - " . $sensorType->name ?? ' Chart',
+            'title' => $title . " - " . $sensor ?? ' Chart',
         ]);
 
         // Redirecționează cu un mesaj de succes

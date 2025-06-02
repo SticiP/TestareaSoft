@@ -33,8 +33,8 @@
 
                             <!-- Butoanele -->
                             <div class="d-flex justify-content-end mt-3">
-                                <a href="{{ route('sensor.type.add') }}" class="btn btn-outline-light me-2">Add Sensor Type</a>
-                                <button type="button" class="btn btn-outline-primary btn-sm me-2" id="add-input-sensor">Add Input Sensor</button>
+{{--                                <a href="{{ route('sensor.type.add') }}" class="btn btn-outline-light me-2">Add Sensor Type</a>--}}
+{{--                                <button type="button" class="btn btn-outline-primary btn-sm me-2" id="add-input-sensor">Add Input Sensor</button>--}}
                                 <button type="submit" class="btn btn-primary me-2">Submit</button>
                                 <a href="{{ route('home') }}" class="btn btn-light">Cancel</a>
                             </div>
@@ -47,117 +47,117 @@
 @endsection
 
 @push('js')
-    <script>
-        let inputSensorCount = 0;
-        const sensorTypes = {!! json_encode($sensor_types) !!};
-        const main = document.getElementById('main');
+{{--    <script>--}}
+{{--        let inputSensorCount = 0;--}}
+{{--        const sensorTypes = {!! json_encode($sensor_types) !!};--}}
+{{--        const main = document.getElementById('main');--}}
 
-        function createNavCard() {
-            const card = document.createElement('div');
-            card.classList.add('col-md-4', 'grid-margin', 'stretch-card');
-            card.id = 'input-card';
-            card.innerHTML = `
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0">Input Sensors</h6>
-                    <span class="badge bg-primary">Tabs: ${inputSensorCount}</span>
-                </div>
-                <ul class="nav nav-tabs" id="inputNav" role="tablist"></ul>
-                <div class="card-body p-0">
-                    <div class="tab-content p-3" id="inputTabContent"></div>
-                </div>
-            </div>
-        `;
-            main.appendChild(card);
-        }
+{{--        function createNavCard() {--}}
+{{--            const card = document.createElement('div');--}}
+{{--            card.classList.add('col-md-4', 'grid-margin', 'stretch-card');--}}
+{{--            card.id = 'input-card';--}}
+{{--            card.innerHTML = `--}}
+{{--            <div class="card">--}}
+{{--                <div class="card-header d-flex justify-content-between align-items-center">--}}
+{{--                    <h6 class="mb-0">Input Sensors</h6>--}}
+{{--                    <span class="badge bg-primary">Tabs: ${inputSensorCount}</span>--}}
+{{--                </div>--}}
+{{--                <ul class="nav nav-tabs" id="inputNav" role="tablist"></ul>--}}
+{{--                <div class="card-body p-0">--}}
+{{--                    <div class="tab-content p-3" id="inputTabContent"></div>--}}
+{{--                </div>--}}
+{{--            </div>--}}
+{{--        `;--}}
+{{--            main.appendChild(card);--}}
+{{--        }--}}
 
-        function addSensorTab() {
-            const index = inputSensorCount;
-            if (index === 0) createNavCard();
+{{--        function addSensorTab() {--}}
+{{--            const index = inputSensorCount;--}}
+{{--            if (index === 0) createNavCard();--}}
 
-            // update badge count
-            document.querySelector('#input-card .badge').textContent = `Tabs: ${index + 1}`;
+{{--            // update badge count--}}
+{{--            document.querySelector('#input-card .badge').textContent = `Tabs: ${index + 1}`;--}}
 
-            const nav = document.getElementById('inputNav');
-            const content = document.getElementById('inputTabContent');
-            const tabId = `input-sensor-${index}`;
+{{--            const nav = document.getElementById('inputNav');--}}
+{{--            const content = document.getElementById('inputTabContent');--}}
+{{--            const tabId = `input-sensor-${index}`;--}}
 
-            // Nav item
-            const li = document.createElement('li');
-            li.classList.add('nav-item');
-            li.id = `${tabId}-tab-item`;
-            li.innerHTML = `
-            <a class="nav-link" id="${tabId}-tab" data-bs-toggle="tab" href="#${tabId}" role="tab">
-                ${index + 1}
-                <span class="ms-1 text-danger" style="cursor:pointer;">&times;</span>
-            </a>
-        `;
-            nav.appendChild(li);
+{{--            // Nav item--}}
+{{--            const li = document.createElement('li');--}}
+{{--            li.classList.add('nav-item');--}}
+{{--            li.id = `${tabId}-tab-item`;--}}
+{{--            li.innerHTML = `--}}
+{{--            <a class="nav-link" id="${tabId}-tab" data-bs-toggle="tab" href="#${tabId}" role="tab">--}}
+{{--                ${index + 1}--}}
+{{--                <span class="ms-1 text-danger" style="cursor:pointer;">&times;</span>--}}
+{{--            </a>--}}
+{{--        `;--}}
+{{--            nav.appendChild(li);--}}
 
-            // Content pane
-            const pane = document.createElement('div');
-            pane.classList.add('tab-pane', 'fade');
-            if (index === 0) pane.classList.add('show', 'active');
-            pane.id = tabId;
-            pane.setAttribute('role', 'tabpanel');
-            pane.innerHTML = `
-            <div class="p-3">
-                <div class="mb-3">
-                    <label class="form-label">Sensor Type</label>
-                    <select name="input_sensors[${index}][sensor_type_id]" class="form-control" required>
-                        <option value="">Select Type</option>
-                        ${sensorTypes.map(st => `<option value="${st.id}">${st.name}</option>`).join('')}
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Sensor Name</label>
-                    <input type="text" name="input_sensors[${index}][sensor_name]" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Pin Number</label>
-                    <input type="number" name="input_sensors[${index}][pin_number]" class="form-control" required>
-                </div>
-                <div class="form-check mb-3">
-                    <input class="form-check-input" type="checkbox" name="input_sensors[${index}][is_output]" id="is_output_${index}">
-                    <label class="form-check-label" for="is_output_${index}">Also Output Sensor</label>
-                </div>
-            </div>
-        `;
-            content.appendChild(pane);
+{{--            // Content pane--}}
+{{--            const pane = document.createElement('div');--}}
+{{--            pane.classList.add('tab-pane', 'fade');--}}
+{{--            if (index === 0) pane.classList.add('show', 'active');--}}
+{{--            pane.id = tabId;--}}
+{{--            pane.setAttribute('role', 'tabpanel');--}}
+{{--            pane.innerHTML = `--}}
+{{--            <div class="p-3">--}}
+{{--                <div class="mb-3">--}}
+{{--                    <label class="form-label">Sensor Type</label>--}}
+{{--                    <select name="input_sensors[${index}][sensor_type_id]" class="form-control" required>--}}
+{{--                        <option value="">Select Type</option>--}}
+{{--                        ${sensorTypes.map(st => `<option value="${st.id}">${st.name}</option>`).join('')}--}}
+{{--                    </select>--}}
+{{--                </div>--}}
+{{--                <div class="mb-3">--}}
+{{--                    <label class="form-label">Sensor Name</label>--}}
+{{--                    <input type="text" name="input_sensors[${index}][sensor_name]" class="form-control" required>--}}
+{{--                </div>--}}
+{{--                <div class="mb-3">--}}
+{{--                    <label class="form-label">Pin Number</label>--}}
+{{--                    <input type="number" name="input_sensors[${index}][pin_number]" class="form-control" required>--}}
+{{--                </div>--}}
+{{--                <div class="form-check mb-3">--}}
+{{--                    <input class="form-check-input" type="checkbox" name="input_sensors[${index}][is_output]" id="is_output_${index}">--}}
+{{--                    <label class="form-check-label" for="is_output_${index}">Also Output Sensor</label>--}}
+{{--                </div>--}}
+{{--            </div>--}}
+{{--        `;--}}
+{{--            content.appendChild(pane);--}}
 
-            // Activate new tab
-            new bootstrap.Tab(document.querySelector(`#${tabId}-tab`)).show();
+{{--            // Activate new tab--}}
+{{--            new bootstrap.Tab(document.querySelector(`#${tabId}-tab`)).show();--}}
 
-            // Remove on close
-            li.querySelector('span').addEventListener('click', (e) => {
-                e.stopPropagation();
-                removeSensorTab(index);
-            });
+{{--            // Remove on close--}}
+{{--            li.querySelector('span').addEventListener('click', (e) => {--}}
+{{--                e.stopPropagation();--}}
+{{--                removeSensorTab(index);--}}
+{{--            });--}}
 
-            inputSensorCount++;
-        }
+{{--            inputSensorCount++;--}}
+{{--        }--}}
 
-        function removeSensorTab(index) {
-            const tabId = `input-sensor-${index}`;
-            const tabItem = document.getElementById(`${tabId}-tab-item`);
-            const pane = document.getElementById(tabId);
+{{--        function removeSensorTab(index) {--}}
+{{--            const tabId = `input-sensor-${index}`;--}}
+{{--            const tabItem = document.getElementById(`${tabId}-tab-item`);--}}
+{{--            const pane = document.getElementById(tabId);--}}
 
-            // Activate another if needed
-            if (tabItem.querySelector('a').classList.contains('active')) {
-                const sibling = tabItem.previousElementSibling || tabItem.nextElementSibling;
-                if (sibling) new bootstrap.Tab(sibling.querySelector('a')).show();
-            }
+{{--            // Activate another if needed--}}
+{{--            if (tabItem.querySelector('a').classList.contains('active')) {--}}
+{{--                const sibling = tabItem.previousElementSibling || tabItem.nextElementSibling;--}}
+{{--                if (sibling) new bootstrap.Tab(sibling.querySelector('a')).show();--}}
+{{--            }--}}
 
-            tabItem.remove();
-            pane.remove();
-            inputSensorCount--;
-            document.querySelector('#input-card .badge').textContent = `Tabs: ${inputSensorCount}`;
+{{--            tabItem.remove();--}}
+{{--            pane.remove();--}}
+{{--            inputSensorCount--;--}}
+{{--            document.querySelector('#input-card .badge').textContent = `Tabs: ${inputSensorCount}`;--}}
 
-            if (inputSensorCount === 0) document.getElementById('input-card').remove();
-        }
+{{--            if (inputSensorCount === 0) document.getElementById('input-card').remove();--}}
+{{--        }--}}
 
-        document.getElementById('add-input-sensor').addEventListener('click', addSensorTab);
-    </script>
+{{--        document.getElementById('add-input-sensor').addEventListener('click', addSensorTab);--}}
+{{--    </script>--}}
     <script>
         function showAlert(type, message) {
             // type: 'success' sau 'danger'

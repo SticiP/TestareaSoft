@@ -11,19 +11,19 @@ return new class extends Migration
         Schema::create('input_sensors', function (Blueprint $table) {
             $table->id(); // Asta generează coloana "id" cu auto increment
             $table->foreignId('device_id')->constrained('devices')->onDelete('cascade');
-            $table->foreignId('sensor_type_id')->constrained('sensor_types')->onDelete('restrict');
+//            $table->foreignId('sensor_type_id')->constrained('sensor_types')->onDelete('restrict');
             $table->string('sensor_name');
-            $table->integer('pin_number')->nullable();
-            $table->json('parameters')->nullable();
             $table->timestamps();
 
-            // Indexuri utile:
-            $table->index(['device_id', 'pin_number']);
-            $table->index('sensor_name');
-            $table->index('created_at');
+            $table->unique(['device_id', 'sensor_name'], 'input_sensors_unique');
 
+            // Indexuri utile:
+//            $table->index(['device_id', 'pin_number']);
+//            $table->index('sensor_name');
+//            $table->index('created_at');
+//
             // Unique compus pentru upsert
-            $table->unique(['device_id', 'sensor_name', 'pin_number'], 'device_sensor_pin_unique');
+//            $table->unique(['device_id', 'sensor_name', 'pin_number'], 'device_sensor_pin_unique');
         });
     }
 

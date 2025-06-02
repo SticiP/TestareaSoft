@@ -25,9 +25,6 @@
         <div class="row">
             <div class="col-md-6">
                 <div class="card">
-                    <div class="card-header">
-                        <h6>Sensor Type : {{ ucfirst($sensor->sensorType->name) }}</h6>
-                    </div>
                     <div class="card-body">
                         <div
                             class="flot-chart"

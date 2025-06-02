@@ -39,6 +39,8 @@ Route::middleware('user')->group(function ()
     Route::post('/chart/remove', [ChartController::class, 'remove'])->name('chart.remove');
 
     Route::get('/sensor/{id}', [InputSensorsController::class, 'sensor_page'])->name('sensor.page');
+
+    Route::get('/change/status/{deviceName}', [DeviceController::class, 'changeStatus'])->name('change.status');
 });
 
 Route::post('/logout', [UserController::class, 'logout'])->name('logout');

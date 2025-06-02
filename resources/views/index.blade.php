@@ -84,22 +84,15 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Select Type</label>
-                        <select
-                            name="sensor_type"
-                            id="sensors_type"
-                            class="form-select">
-                            <option selected disabled>Select sensor type</option>
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
                         <label class="form-label">Select Sensors</label>
                         <select
                             name="sensors[]"
                             id="sensors"
-                            class="js-example-basic-multiple form-select"
-                            multiple="multiple" data-width="100%">
+                            class="form-select" data-width="100%">
+                            <option value="a1">a1</option>
+                            <option value="a2">a2</option>
+                            <option value="d1">d1</option>
+                            <option value="d2">d2</option>
                         </select>
                     </div>
 
@@ -213,56 +206,56 @@
                 $.getJSON('/device/get', data => {
                     let opts = data.map(d => `<option value="${d.id}">${d.device_name}</option>`).join('');
                     $('#devices').html(opts);
-                    $('#sensors').html('');
+                    // $('#sensors').html('');
                 });
             });
 
-            // when devices change, load sensors
-            $('#devices').on('change', function () {
-                let devs = $(this).val();
-                if (!devs || !devs.length) return;
-                $('#sensors_type').html('');
-                $.ajax({
-                    url: 'sensors/type', type: 'GET', data: {device_ids: devs}, success: sensorTypes => {
-                        console.log("sensorTypes : ");
-                        console.log(sensorTypes);
+            // // when devices change, load sensors
+            // $('#devices').on('change', function () {
+            //     let devs = $(this).val();
+            //     if (!devs || !devs.length) return;
+            //     $('#sensors_type').html('');
+            //     $.ajax({
+            //         url: 'sensors/type', type: 'GET', data: {device_ids: devs}, success: sensorTypes => {
+            //             console.log("sensorTypes : ");
+            //             console.log(sensorTypes);
+            //
+            //             let opts = sensorTypes.map(st =>
+            //                 `<option value="${st.id}">${st.name}</option>`
+            //             ).join('');
+            //             $('#sensors_type').html(opts);
+            //             $('#sensors_type').trigger('change');
+            //         }
+            //     });
+            // });
 
-                        let opts = sensorTypes.map(st =>
-                            `<option value="${st.id}">${st.name}</option>`
-                        ).join('');
-                        $('#sensors_type').html(opts);
-                        $('#sensors_type').trigger('change');
-                    }
-                });
-            });
-
-            $('#sensors_type').on('change', function () {
-                let devs = $('#devices').val();
-                let type_id = $(this).val();
-                console.log("devs " + devs);
-                console.log("type_id " + type_id);
-                $('#sensors').html('');
-                if (!devs || !devs.length) return;
-                $.ajax({
-                    url: '/sensors/get',
-                    type: 'GET',
-                    data: {
-                        device_ids: devs,
-                        type_id: type_id
-                    },
-                    success: sensors => {
-                        console.log("sensors : ");
-                        console.log(sensors);
-                        let opts = sensors.map(s => `
-                            <option value="${s.id}">${s.sensor_name}</option>
-                        `).join('');
-                        $('#sensors').html(opts);
-                    },
-                    error: error => {
-                        console.error('Eroare:', error);
-                    }
-                });
-            });
+            // $('#sensors_type').on('change', function () {
+            //     let devs = $('#devices').val();
+            //     let type_id = $(this).val();
+            //     console.log("devs " + devs);
+            //     console.log("type_id " + type_id);
+            //     $('#sensors').html('');
+            //     if (!devs || !devs.length) return;
+            //     $.ajax({
+            //         url: '/sensors/get',
+            //         type: 'GET',
+            //         data: {
+            //             device_ids: devs,
+            //             type_id: type_id
+            //         },
+            //         success: sensors => {
+            //             console.log("sensors : ");
+            //             console.log(sensors);
+            //             let opts = sensors.map(s => `
+            //                 <option value="${s.id}">${s.sensor_name}</option>
+            //             `).join('');
+            //             $('#sensors').html(opts);
+            //         },
+            //         error: error => {
+            //             console.error('Eroare:', error);
+            //         }
+            //     });
+            // });
 
             $('body').prepend(`
                 <div id="custom-alert-container"
@@ -270,31 +263,31 @@
                 </div>
             `);
 
-            $('#sensors').on('select2:select select2:unselect', function (e) {
-                const selected = $(this).val() || [];
-
-                if (selected.length >= MAX_SELECTIONS + 1 && e.type === 'select2:select') {
-                    e.preventDefault();
-
-                    const alertHtml = `
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            You can select maximum ${MAX_SELECTIONS} sensors!
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    `;
-
-                    $('#custom-alert-container').html(alertHtml);
-
-                    // Elimină selecția nouă dacă este cazul
-                    const newOption = $(e.params.data.element);
-                    newOption.prop('selected', false);
-                    $(this).trigger('change.select2');
-
-                    setTimeout(() => {
-                        $('#custom-alert-container .alert').alert('close');
-                    }, 5000);
-                }
-            });
+            // $('#sensors').on('select2:select select2:unselect', function (e) {
+            //     const selected = $(this).val() || [];
+            //
+            //     if (selected.length >= MAX_SELECTIONS + 1 && e.type === 'select2:select') {
+            //         e.preventDefault();
+            //
+            //         const alertHtml = `
+            //             <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            //                 You can select maximum ${MAX_SELECTIONS} sensors!
+            //                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            //             </div>
+            //         `;
+            //
+            //         $('#custom-alert-container').html(alertHtml);
+            //
+            //         // Elimină selecția nouă dacă este cazul
+            //         const newOption = $(e.params.data.element);
+            //         newOption.prop('selected', false);
+            //         $(this).trigger('change.select2');
+            //
+            //         setTimeout(() => {
+            //             $('#custom-alert-container .alert').alert('close');
+            //         }, 5000);
+            //     }
+            // });
 
             // open config modal with lib & type
             $('.add-chart').on('click', function (e) {
