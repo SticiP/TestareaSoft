@@ -145,8 +145,7 @@ class DataController extends Controller
             }
         }
 
-        return response()->json([
-            'd2' => $output
-        ], 201);
+        return response("d2=" . $output, 201)
+            ->header('Content-Type', 'text/plain');
     }
 }
