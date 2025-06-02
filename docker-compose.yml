@@ -5,7 +5,7 @@ services:
         container_name: node_frontend
         working_dir: /var/www/html
         volumes:
-            - ./:/var/www/html
+            - ./:/var/www/html:delegated
         ports:
             - "5173:5173"
         command: >
@@ -24,13 +24,10 @@ services:
         restart: unless-stopped
         working_dir: /var/www/html
         volumes:
-            - ./:/var/www/html
-        entrypoint: >
-            sh -c "chgrp -R www-data storage bootstrap/cache database/migrations &&
-                       chmod -R 775 storage bootstrap/cache database/migrations &&
-                       php-fpm"
+            - ./:/var/www/html:delegated
         networks:
             - laravel
+        entrypoint: ["php-fpm"]
 
     # Serviciul Nginx
     webserver:
@@ -40,7 +37,7 @@ services:
         ports:
             - "8000:80"
         volumes:
-            - ./:/var/www/html
+            - ./:/var/www/html:delegated
             - ./nginx/conf.d:/etc/nginx/conf.d
         depends_on:
             - app

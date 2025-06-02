@@ -29,7 +29,7 @@ COPY . .
 RUN chmod -R 777 storage bootstrap/cache
 
 # Instalăm dependențele PHP ale Laravel
-RUN composer install --optimize-autoloader --no-dev
+#RUN composer install --optimize-autoloader --no-dev
 
 # Creăm directoarele necesare și setăm permisiuni
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
